@@ -1,0 +1,37 @@
+version: "3"
+services:
+  flask_hello_world:
+    build: .
+    ports:
+      - 5002:5000
+    environment:
+      - APPDYNAMICS_TCP_COMM_PORT=9091
+      - APPDYNAMICS_AGENT_APPLICATION_NAME=flask-hello-world-docker
+      - APPDYNAMICS_AGENT_TIER_NAME=hello-world
+      - APPDYNAMICS_AGENT_REUSE_NODE_NAME=true
+      - APPDYNAMICS_AGENT_REUSE_NODE_NAME_PREFIX=flask-hw
+      - APPDYNAMICS_AGENT_ACCOUNT_NAME=ndc-nfr
+      - APPDYNAMICS_AGENT_ACCOUNT_ACCESS_KEY
+      - APPDYNAMICS_CONTROLLER_HOST_NAME=ndc-nfr.saas.appdynamics.com
+      - APPDYNAMICS_CONTROLLER_PORT=443
+      - APPDYNAMICS_CONTROLLER_SSL_ENABLED=true
+    healthcheck:
+      test: curl -f http://localhost:5000 || exit 1
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 3s
+  app_dynamics_proxy:
+    image: appdynamics/dl-proxy:latest
+    depends_on:
+      flask_hello_world:
+        condition: service_healthy
+    tty: true
+    environment:
+      - APPDYNAMICS_DEBUG_LOG="on"
+      - APPDYNAMICS_LOGGING_LEVEL="debug"
+      - APPDYNAMICS_TCP_COMM_HOST="flask_hello_world"
+      - APPDYNAMICS_TCP_COMM_PORT="9091"
+      - APPDYNAMICS_TCP_PORT_RANGE="10000-10100"
+    ports:
+      - 9091:9091
