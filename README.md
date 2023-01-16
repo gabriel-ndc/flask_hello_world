@@ -30,7 +30,7 @@ APPDYNAMICS_AGENT_ACCOUNT_ACCESS_KEY=<access_key_value> docker-compose up -d --b
 
 ## Kubernetes
 
-[A documentação](https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/install-app-server-agents/python-agent/install-the-python-agent-in-containers) menciona melhor o uso de Kubernetes para fazer o deploy da aplicação junto com o proxy, e desse jeito aparentemente funciona. Localmente, foi testando usando o `minikube`.
+[A documentação](https://docs.appdynamics.com/appd/23.x/latest/en/application-monitoring/install-app-server-agents/python-agent/install-the-python-agent-in-containers) menciona melhor o uso de Kubernetes para fazer o deploy da aplicação junto com o proxy, e desse jeito aparentemente funciona. Localmente, foi testado usando o `minikube`.
 
 As variáveis de ambiente principais estão definidas como um ConfigMap no arquivo `k8s/appd-python-configmap.yaml`. Para aplicá-lo:
 
