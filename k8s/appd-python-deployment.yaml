@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-hello-world
+spec:
+  selector:
+    matchLabels:
+      name: flask-hello-world
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: flask-hello-world
+    spec:
+      containers:
+        - name: flask-hello-world
+          image: flask-hello-world:latest
+          imagePullPolicy: Never
+          env:
+          - name: APPDYNAMICS_AGENT_TIER_NAME
+            value: hello-world
+          - name: APPDYNAMICS_AGENT_ACCOUNT_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                key: access-key
+                name: appd-agent-secret
+          envFrom:
+            - configMapRef:
+                name: appd-python-configmap
+          ports:
+          - containerPort: 5000
+          resources:
+            limits:
+              cpu: 500m
+              memory: 900M
+            requests:
+              cpu: 400m
+              memory: 600M
+        - name: proxy
+          image: appdynamics/dl-proxy:latest
+          imagePullPolicy: Always
+          env:
+            - name: APPDYNAMICS_DEBUG_LOG
+              value: "on"
+            - name: APPDYNAMICS_LOGGING_LEVEL
+              value: "debug"
+            - name: APPDYNAMICS_TCP_COMM_HOST
+              value: "0.0.0.0"
+            - name: APPDYNAMICS_TCP_COMM_PORT
+              value: "9091"
+            - name: APPDYNAMICS_TCP_PORT_RANGE
+              value: "10000-10100"
+          ports:
+            - containerPort: 9091
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 500m
+              memory: 900M
+            requests:
+              cpu: 400m
+              memory: 600M
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-hello-world
+spec:
+  type: LoadBalancer
+  selector:
+    name: flask-hello-world
+  ports:
+  - name: http
+    port: 5000
+    targetPort: 5000
